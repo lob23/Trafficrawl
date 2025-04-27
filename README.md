@@ -3,8 +3,11 @@
 ## I. Introduction:
 This repository provides a lightweight tool to capture HTTP(S) requests from Android applications using mitmproxy. It is up-to-date and handles certificate pinning (using Frida) as well as the untrusted user certificate issue introduced in Android 7.0 (API level 24).
 
-> ⚠️ **Warning:** The current version only supports macOS.  
-> Support for other operating systems will be added later if requested.
+## ⚠️ Warning
+
+> **The current version only supports macOS.**  
+> Support for other operating systems (like Windows or Linux) will be added later based on user requests.
+
 
 ## II. Prequisite:
 ### 1. Android Studio Emulator:
