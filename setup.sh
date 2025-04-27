@@ -21,16 +21,16 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-echo "Install mitmproxy's certificate succeeded. Continuing..."
+echo "Waiting for emulator to be ready..."
+adb wait-for-device
 
+BOOT_COMPLETED=""
+until [[ "$BOOT_COMPLETED" == "1" ]]; do
+    BOOT_COMPLETED=$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
+    sleep 1
+done
+echo "Emulator fully booted."
 
-bash src/proxy_setting.sh
-
-if [ $? -ne 0 ]; then
-    echo "Setting proxy failed. Exiting..."
-    exit 1
-fi
-
-echo "Setting proxy succeeded."
+echo "Install mitmproxy's certificate succeeded."
 echo "Setup is complete. Your emulator is now ready to capture network traffic."
 

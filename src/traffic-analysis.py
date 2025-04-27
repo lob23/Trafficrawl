@@ -4,8 +4,9 @@ import os
 import sys
 
 import re2
-from mitmproxy import http
+from mitmproxy import http,ctx
 from mitmproxy.script import concurrent
+
 from adblockparser import AdblockRules
 from glob import glob
 from urllib.parse import urlparse
@@ -58,6 +59,17 @@ THIRD_PARTY_DOMAINS = [
     "jumptap.com",
     "atdmt.com"
 ]
+
+def load(loader):
+    loader.add_option(
+        "app_package", str, "", "App package name"
+    )
+APP_PACKAGE = ""
+
+def running():
+    global APP_PACKAGE
+    APP_PACKAGE = ctx.options.app_package
+    print(f"APP PACKAGE: {APP_PACKAGE}")
 
 def log(message):
     print(f"[Traffic Analysis] {message}")
@@ -150,7 +162,7 @@ def get_request_options(req):
 
 
 # Analyze each HTTP request and log whether it is blocked or allowed
-LOG_FILE = "request_log.jsonl"
+LOG_FILE = "request_log"
 
 @concurrent
 def request(flow: http.HTTPFlow):
@@ -197,6 +209,6 @@ def request(flow: http.HTTPFlow):
         "action": "BLOCKED" if blocked else "ALLOWED"
     }
 
-    with open(LOG_FILE, "a", encoding="utf-8") as f:
+    with open(f'{LOG_FILE}_{APP_PACKAGE}.jsonl', "a", encoding="utf-8") as f:
         json.dump(log_entry, f, ensure_ascii=False)
         f.write("\n")
