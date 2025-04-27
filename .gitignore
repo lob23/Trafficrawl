@@ -6,3 +6,4 @@ __pycache__/
 *.cer
 *.crt
 *.key
+frida-server-16.5.9-android-arm64
