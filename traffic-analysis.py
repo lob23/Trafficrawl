@@ -78,8 +78,6 @@ def normalize_domain(host):
         return f"{extracted.domain}.{extracted.suffix}"
     return host.lower()
 
-
-
 def is_third_party(req):
     req_host = normalize_domain(req.host)
     
