@@ -27,7 +27,7 @@ else
 fi
 
 echo "Starting emulator: $EMULATOR_NAME"
-$ANDROID_HOME/emulator/emulator @$EMULATOR_NAME -writable-system -no-snapshot-load -no-boot-anim -accel on &
+$ANDROID_HOME/emulator/emulator -avd $EMULATOR_NAME -snapshot mysnapshot -writable-system
 
 echo "Waiting for emulator to boot..."
 adb wait-for-device

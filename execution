@@ -10,4 +10,3 @@ if [ "$1" == "-w"]; then
 else
   mitmdump -s traffic-analysis.py -p $PORT --set block_global=false
 fi
-
