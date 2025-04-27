@@ -1,8 +1,6 @@
 #!/bin/bash
 
-# Get local IP (works for Linux/Mac)
 IP=$(ipconfig getifaddr en0 || hostname -I | awk '{print $1}')
-# Port where mitmproxy will listen
 PORT=8080
 
 echo "Waiting for emulator to be ready..."
@@ -18,6 +16,22 @@ echo "Emulator fully booted."
 
 adb root
 sleep 1
+
+echo "Starting mitmproxy..."
+mitmdump &
+MITMPROXY_PID=$!
+
+echo "Waiting for mitmproxy certificate to be generated..."
+while [ ! -f "$HOME/.mitmproxy/mitmproxy-ca-cert.pem" ]; do
+    sleep 1
+done
+
+echo "Certificate generated!"
+
+echo "Stopping mitmproxy..."
+kill $MITMPROXY_PID
+
+cp ~/.mitmproxy/mitmproxy-ca-cert.pem mitmproxy-ca-cert.cer
 
 hashed_name=`openssl x509 -inform PEM -subject_hash_old -in mitmproxy-ca-cert.cer | head -1` && cp mitmproxy-ca-cert.cer $hashed_name.0
 
