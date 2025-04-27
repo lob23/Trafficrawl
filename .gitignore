@@ -1,3 +1,8 @@
 trafficrawl/
 .qodo/
 __pycache__/
+*.0
+*.pem
+*.cer
+*.crt
+*.key
