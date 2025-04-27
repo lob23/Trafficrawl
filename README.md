@@ -21,6 +21,7 @@ You should have these tools in your device
 - adb (Android Debug Bridge) available in your PATH. Checking by `adb version`
 - openssl (for certificate hash generation). Checking by `openssl version`
 - wget or curl (for downloading frida-server). Checking by `wget --version` or `curl --version`.
+- `unxz` (for extracting frida server file). Checking by `unxz version`
 
 ### 3. Python Environment:
 - python3 is required. Checking by `python --version`. Note that in some cases, your python is specified by different name, such as `python3`.
