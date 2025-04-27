@@ -1,0 +1,13 @@
+#!/bin/bash
+
+IP_ADDRESS=$(ifconfig en0 | grep "inet " | awk '{print $2}')
+PORT=8080
+
+echo "-- The mitmproxy is running at ip address of $IP_ADDRESS, port = $PORT --"
+
+if [ "$1" == "-w"]; then
+  mitmweb -s traffic-analysis.py -p $PORT --set block_global=false
+else
+  mitmdump -s traffic-analysis.py -p $PORT --set block_global=false
+fi
+
