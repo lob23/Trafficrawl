@@ -7,6 +7,7 @@ if [ -z "$AVD_LIST" ]; then
     echo "No emulator found"
     echo "Please create one manually using Android Studio or avdmanager."
     exit 1
+fi  # <<< You forgot this 'fi'
 
 echo "Available emulators:"
 echo "$AVD_LIST"
@@ -28,8 +29,6 @@ fi
 echo "Starting emulator: $EMULATOR_NAME"
 $ANDROID_HOME/emulator/emulator @$EMULATOR_NAME -writable-system -no-snapshot-load -no-boot-anim -accel on &
 
-
-
 echo "Waiting for emulator to boot..."
 adb wait-for-device
 
@@ -48,5 +47,3 @@ if [ $? -ne 0 ]; then
     echo "Emulator is NOT rooted. Please use an emulator created with a 'Google APIs' system image."
     exit 1
 fi
-
-echo "Emulator is rooted and ready!"
