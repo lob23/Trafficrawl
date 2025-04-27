@@ -1,7 +1,10 @@
 # Trafficrawl
 
 ## I. Introduction:
-This repository provides a lightweight tool to capture HTTP(S) requests from Android applications using mitmproxy. It is up-to-date and handles certificate pinning (using Frida) as well as the untrusted user certificate issue introduced in Android 7.0 (API level 24). The current version is for macOS. Support for other operating systems will be added later upon request.
+This repository provides a lightweight tool to capture HTTP(S) requests from Android applications using mitmproxy. It is up-to-date and handles certificate pinning (using Frida) as well as the untrusted user certificate issue introduced in Android 7.0 (API level 24).
+
+> ⚠️ **Warning:** The current version only supports macOS.  
+> Support for other operating systems will be added later if requested.
 
 ## II. Prequisite:
 ### 1. Android Studio Emulator:
