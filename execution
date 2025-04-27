@@ -38,9 +38,9 @@ adb shell "/data/local/tmp/frida-server &"
 echo "Frida-server setup completed."
 
 if [ "$1" == "-w"]; then
-  mitmweb -s traffic-analysis.py -p $PORT --set block_global=false
+  mitmweb -s src/traffic-analysis.py -p $PORT --set block_global=false
 else
-  mitmdump -s traffic-analysis.py -p $PORT --set block_global=false
+  mitmdump -s src/traffic-analysis.py -p $PORT --set block_global=false
 fi
 
-frida -U -f ${PACKAGE} -l multiple-script.js
+frida -U -f ${PACKAGE} -l src/multiple-script.js
