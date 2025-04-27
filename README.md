@@ -1,7 +1,7 @@
 # Trafficrawl
 
 ## I. Introduction:
-This repository provides a lightweight tool to capture HTTP(S) requests from Android applications using mitmproxy. It is up-to-date and handles certificate pinning (using Frida) as well as the untrusted user certificate issue introduced in Android 7.0 (API level 24).
+This repository provides a lightweight tool to capture HTTP(S) requests from Android applications using mitmproxy. The captured requests are filtered using EasyList and EasyPrivacy rules to identify advertisement and tracker requests, helping to reveal potential privacy threats within the APK. It is up-to-date and handles certificate pinning (using Frida) as well as the untrusted user certificate issue introduced in Android 7.0 (API level 24).
 
 ## ⚠️ Warning
 
