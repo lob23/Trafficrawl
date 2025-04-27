@@ -54,7 +54,7 @@ MITM_PID=$!
 
 echo "mitmproxy is running with PID: ${MITM_PID}"
 
-frida -U -f ${PACKAGE} -l src/multiple-script.js
+frida -U -f ${PACKAGE} -l src/utils/multiple-script.js
 
 echo "Resetting proxy settings..."
 

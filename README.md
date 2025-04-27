@@ -111,6 +111,9 @@ In this work, we developed a lightweight tool that acts as a proxy to capture ne
 
 ## VII. References:
 [1] Epitron, "mitm-adblock," GitHub, [Online]. Available: https://github.com/epitron/mitm-adblock.
+
 [2] Akabe1, "frida-multiple-unpinning," Codeshare by Frida, [Online]. Available: https://codeshare.frida.re/@akabe1/frida-multiple-unpinning/.
+
 [3] EasyList, "EasyList" [Online]. Available:https://easylist.to/easylist/easylist.txt. 
+
 [4] EasyList, "EasyPrivacy" [Online]. Available: https://easylist.to/easylist/easyprivacy.txt.
