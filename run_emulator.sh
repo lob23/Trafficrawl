@@ -28,22 +28,3 @@ fi
 
 echo "Starting emulator: $EMULATOR_NAME"
 $ANDROID_HOME/emulator/emulator -avd $EMULATOR_NAME -no-snapshot-load -no-snapshot-save -wipe-data -writable-system
-
-echo "Waiting for emulator to boot..."
-adb wait-for-device
-
-BOOT_COMPLETED=""
-until [[ "$BOOT_COMPLETED" == "1" ]]; do
-    BOOT_COMPLETED=$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
-    sleep 1
-done
-
-echo "Emulator booted!"
-
-echo "Checking if emulator is rooted..."
-adb root >/dev/null 2>&1
-
-if [ $? -ne 0 ]; then
-    echo "Emulator is NOT rooted. Please use an emulator created with a 'Google APIs' system image."
-    exit 1
-fi
