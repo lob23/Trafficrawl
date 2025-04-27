@@ -163,7 +163,7 @@ def get_request_options(req):
 
 
 # Analyze each HTTP request and log whether it is blocked or allowed
-LOG_FILE = "request_log"
+LOG_FILE = "results/request_log"
 
 @concurrent
 def request(flow: http.HTTPFlow):
