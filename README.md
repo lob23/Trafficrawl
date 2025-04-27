@@ -28,6 +28,7 @@ You should have these tools in your device
 
 ## III. Usage:
 - Verify all the shell scripts in the repository has permissions to run. Specifically, using the command `ls -l` to see if all the scripts are have executed permission `-rwxr-xr-x`. If not, using `chmod +x` for each file.
+- Preparing the EasyList block lists by running `./download_easylist.sh`. This script downloads two lists are EasyList and EasyPrivacy.
 - Starting the emulator (we assume you have created a rooted emulator already) by `./run_emulator.sh`. This script will not finish but keep showing the status of the emulator runtime, so that you can move to the next step when you see the emulator is shown the home screen. 
 - Verify if the emulator is matched the criteria to continue by `./verify.sh`. This script will check if your emulator is rooted already.
 - Installing the mitmproxy's certificate to the system directory of the emulator by `./install_certificate.sh`. **Important Note: If you use the "Google Play" or other system images that did not rooted by default, you have to do this step manually by following the tutorial at https://docs.mitmproxy.org/stable/howto-install-system-trusted-ca-android/#3-insert-certificate-into-system-certificate-store and skip running this script.**
