@@ -70,6 +70,7 @@ def running():
     global APP_PACKAGE
     APP_PACKAGE = ctx.options.app_package
     print(f"APP PACKAGE: {APP_PACKAGE}")
+    os.makedirs("results", exist_ok=True)
 
 def log(message):
     print(f"[Traffic Analysis] {message}")
