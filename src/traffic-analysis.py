@@ -1,19 +1,22 @@
 import json
 from datetime import datetime
 import os
-import sys
-
 import re2
-from mitmproxy import http,ctx
-from mitmproxy.script import concurrent
 
 from adblockparser import AdblockRules
 from glob import glob
 from urllib.parse import urlparse
-import tldextract
 import base64
 import gzip
+from iso3166 import countries      
+ISO_CC = {c.alpha2.lower() for c in countries}
 
+from urllib.parse import urlparse
+from publicsuffix2 import PublicSuffixList          
+import ipaddress
+import tldextract
+from mitmproxy import http,ctx
+from mitmproxy.script import concurrent
 
 IMAGE_MATCHER = re2.compile(r"\.(png|jpe?g|gif|webp|svg|ico|tiff?|avif|bmp|heic)$", re2.IGNORECASE)
 SCRIPT_MATCHER = re2.compile(r"\.(js|mjs|jsx|ts|tsx|vue|coffee|dart|svelte|wasm)$", re2.IGNORECASE)
@@ -22,7 +25,6 @@ STYLESHEET_MATCHER = re2.compile(r"\.(css|scss|less|sass|styl)$", re2.IGNORECASE
 OBJECT_MATCHER = re2.compile(r"\.(swf|flv|jar|exe|apk|dmg|deb|ipa|aab)$", re2.IGNORECASE)
 XHR_MATCHER = re2.compile(r"\.(json|xml|php|aspx|jsp|cgi|yaml|yml|graphql|proto)$", re2.IGNORECASE)
 WEBSOCKET_MATCHER = re2.compile(r"^wss?:\/\/", re2.IGNORECASE)
-
 
 # Stems from both :
 # [1] "A Comprehensive Study on Third-Party User Tracking in Mobile Applications" by Federica Paci et al.
@@ -82,6 +84,15 @@ THIRD_PARTY_DOMAINS = [
     "airpush.com"
 ]
 
+BORING_PKG_TOKENS = {
+    "com", "org", "net", "io", "gov", "edu", "mil", "info", "biz",
+    "free", "paid", "beta", "lite", "demo", "trial",
+    "test", "alpha", "rc", "debug", "android", "lib", "libs", "core", "util", "utils",
+    "common", "internal", "impl", "framework", "component",
+    "tools", "base", "prefs", "settings",
+}
+_psl = PublicSuffixList()
+
 def load(loader):
     loader.add_option(
         "app_package", str, "", "App package name"
@@ -105,6 +116,29 @@ if not blocklist_files:
 rules = AdblockRules((line for file in blocklist_files for line in open(file, "r", encoding="utf-8")),
                      supported_options=["third-party", "script", "image", "stylesheet", "object", "xmlhttprequest", "subdocument", "document", "ping", "media", "font", "other"])
 
+def normalise_domain(host):
+
+    if not host:
+        return ""
+
+    if isinstance(host, bytes):
+        host = host.decode("ascii", "ignore")
+    host = host.lower().strip("[]")  
+
+    try:
+        ipaddress.ip_address(host)
+        return host
+    except ValueError:
+        pass
+
+    suffix = _psl.get_public_suffix(host)
+    if not suffix:
+        print(f"NO SUFFIX FOR {suffix}")
+        return host  
+
+    lbl = host.rsplit("." + suffix, 1)[0].split(".")[-1]
+    return f"{lbl}.{suffix}" if lbl else host
+
 def normalize_domain(host):
     if not host:
         return ""
@@ -113,40 +147,65 @@ def normalize_domain(host):
         return f"{extracted.domain}.{extracted.suffix}"
     return host.lower()
 
-def is_third_party(req):
-    req_host = normalize_domain(req.host)
+def _extract_pkg_tokens(pkg: str) -> set[str]:
+    toks = pkg.lower().split(".")
+    while toks and toks[0] in ISO_CC:
+        toks.pop(0)
+        if toks and toks[0] == "co":
+            toks.pop(0)
+    return {
+        t for t in toks
+        if t not in BORING_PKG_TOKENS and len(t) > 2 and t.isalpha()
+    }
+
+def _header(req, key: str) -> str:
+    return (req.headers.get(key, "") or "").strip()
+
+
+def _first_party_by_pkg(req_host: str, package_name: str) -> bool:
+    tokens  = _extract_pkg_tokens(package_name)
+    labels  = normalise_domain(req_host).split(".")       
+    return bool(tokens & set(labels))         
+
+def _same_site(a: str, b: str) -> bool:
+    if not a or not b:
+        return False                   
+    if a == b:
+        return True
+    return a.endswith("." + b) or b.endswith("." + a)
+
+def is_third_party(req): 
+
+    host = req.host or _header(req, ":authority") or getattr(req, "sni", "")
+    req_host = normalise_domain(host)
     
-    if any(req_host == domain or req_host.endswith(f".{domain}") for domain in THIRD_PARTY_DOMAINS):
+
+    try:
+        ipaddress.ip_address(host)
+        return True
+    except ValueError:
+        pass
+
+    if req_host in THIRD_PARTY_DOMAINS or any(
+        req_host.endswith("." + d) for d in THIRD_PARTY_DOMAINS
+    ):
         return True
 
-    app_domain = None
-    app_package = req.headers.get("X-Requested-With", "").strip() or \
-                  req.headers.get("X-Google-Maps-Mobile-API", "").split(",")[0].strip()
-    if app_package:
-        parts = app_package.split('.')
-        if len(parts) >= 2:
-            if parts[0] in ("com", "io") and len(parts) >= 3:
-                app_domain = f"{parts[1]}.{parts[0]}"
-            else:
-                app_domain = f"{parts[-2]}.{parts[-1]}"
+    pkg = _header(req, "X-Requested-With") or _header(req, "x-requested-with") or _header(req, "x-google-maps-mobile-api").split(",")[0]  or _header(req, "X-Google-Maps-Mobile-API").split(",")[0]
+    if pkg and _first_party_by_pkg(req_host, pkg):
+        return False
     
-    if app_domain:
-        app_domain_normalized = normalize_domain(app_domain)
-        if req_host == app_domain_normalized or req_host.endswith(f".{app_domain_normalized}"):
-            return False
-        
-    referer = req.headers.get("Referer", "").strip()
-    origin = req.headers.get("Origin", "").strip()
+
+    referer = req.headers.get("Referer", "").strip() or req.headers.get("referer", "").strip()
+    origin = req.headers.get("Origin", "").strip() or req.headers.get("origin", "").strip()
 
     referer_host = normalize_domain(urlparse(referer).netloc) if referer.startswith("http") else ""
     origin_host = normalize_domain(urlparse(origin).netloc) if origin.startswith("http") else ""
-
-    if referer_host and origin_host:
-        return req_host != referer_host and req_host != origin_host
-    elif referer_host:
-        return req_host != referer_host
-    elif origin_host:
-        return req_host != origin_host
+    if (origin_host or referer_host):
+        if _same_site(req_host, origin_host) or _same_site(req_host, referer_host):
+            return False    
+        else:
+            return True    
     
     return False
 
@@ -171,13 +230,13 @@ def get_request_options(req):
         options["script"] = True
     elif STYLESHEET_MATCHER.search(url_path) or content_type.startswith("text/css"):
         options["stylesheet"] = True
-    elif OBJECT_MATCHER.search(url_path) or content_type.startswith(("application/x-shockwave-flash", "application/java-archive", "application/octet-stream")): # More object content types
+    elif OBJECT_MATCHER.search(url_path) or content_type.startswith(("application/x-shockwave-flash", "application/java-archive", "application/octet-stream")): 
         options["object"] = True
     elif XHR_MATCHER.search(url_path) or req.headers.get("X-Requested-With") == "XMLHttpRequest" or content_type == "application/json" or any(pattern in req.url for pattern in ["/api/", "/graphql", "/rest/"]):
         options["xmlhttprequest"] = True
-    elif MEDIA_MATCHER.search(url_path) or content_type.startswith(("audio/", "video/", "application/vnd.apple.mpegurl")): # Add m3u8 content type
+    elif MEDIA_MATCHER.search(url_path) or content_type.startswith(("audio/", "video/", "application/vnd.apple.mpegurl")): 
         options["media"] = True
-    elif content_type.startswith(("text/html", "application/xhtml+xml", "application/vnd.wap.xhtml+xml")): # More document content types
+    elif content_type.startswith(("text/html", "application/xhtml+xml", "application/vnd.wap.xhtml+xml")): 
         options["document"] = True
     elif (upgrade_header == "websocket" and connection_header == "upgrade") or (upgrade_header == "websocket" and WEBSOCKET_MATCHER.search(req.url)):
         options["websocket"] = True
@@ -213,7 +272,6 @@ def request(flow: http.HTTPFlow):
                 request_body = raw_content.decode("latin1")
                 decode_method = decode_method + "+latin1" if decode_method != "none" else "latin1"
             except Exception:
-                # Final fallback: base64 encode binary
                 encoded = base64.b64encode(raw_content).decode("ascii")
                 request_body = encoded
                 decode_method = decode_method + "+base64" if decode_method != "none" else "base64"
