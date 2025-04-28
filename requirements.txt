@@ -1,0 +1,6 @@
+re2
+iso3166
+publicsuffix2
+tldextract
+mitmproxy==5.1.1
+adblockparser==0.7
