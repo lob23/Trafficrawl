@@ -24,21 +24,38 @@ XHR_MATCHER = re2.compile(r"\.(json|xml|php|aspx|jsp|cgi|yaml|yml|graphql|proto)
 WEBSOCKET_MATCHER = re2.compile(r"^wss?:\/\/", re2.IGNORECASE)
 
 
-# Stems from both :A Comprehensive Study on Third-Party User Tracking in Mobile Applications by Federica Paci 
-# and A Study of Third-Party Tracking by Mobile Apps in the Wild by Seungyeop Han
+# Stems from both :
+# [1] "A Comprehensive Study on Third-Party User Tracking in Mobile Applications" by Federica Paci et al.
+# [2] “Mobile health and privacy: cross sectional study,” by G. Tangari et al.
+# [3] "A fait accompli? an empirical study into the absence of consent to {Third-Party} tracking in android apps" by Kollnig et al.
+# and [4] "A Study of Third-Party Tracking by Mobile Apps in the Wild" by Seungyeop Han et al.
 THIRD_PARTY_DOMAINS = [
+    "googletagmanager.com",
+    "mixpanel.com",
+    "twitter.com",
+    "liftoff.io"
+    "startappservice.com",
+    "apps-ticket.com",
+    "ya-tracker.com",
+    "googleadservices.com",
+    "yahoo.com",
+    "nexage.com",
+    "gstatic.com",
+    "googleusercontent.com",
+    "facebook.net",
+    "google.com",
     "googleapis.com",      
-    "facebook.com",        
-    "cloudfront.net",      
+    "facebook.com",      
+    "cloudfront.net",     
     "apple.com",           
-    "gvt2.com",            
+    "gvt2.com",           
     "crashlytics.com",     
-    "app-measurement.com", 
-    "appsflyer.com",       
-    "doubleclick.net",    
-    "adjust.com",          
-    "demdex.net",          
-    "branch.io",           
+    "app-measurement.com",
+    "appsflyer.com",      
+    "doubleclick.net",     
+    "adjust.com",         
+    "demdex.net",         
+    "branch.io",         
     "google-analytics.com",
     "googlesyndication.com",
     "admob.com",
@@ -57,7 +74,12 @@ THIRD_PARTY_DOMAINS = [
     "bluekai.com",
     "mydas.mobi",
     "jumptap.com",
-    "atdmt.com"
+    "atdmt.com",
+    "chartboost.com",
+    "unity3d.com",
+    "vungle.com",
+    "applovin.com",
+    "airpush.com"
 ]
 
 def load(loader):
