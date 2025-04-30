@@ -81,8 +81,7 @@ Replace <PACKAGE_NAME> with the actual app's package name (example: vn.frt.longc
     File format: request_log_<PACKAGE_NAME>.jsonl
     Example: request_log_vn.frt.longchau.app.jsonl
     > **Note:**
-    The new traffic will be added to the existing file.
-    If you want a fresh capture, delete the old log file first.
+    New traffic for a package will be appended to its existing log file, if one already exists. To start a fresh capture for a previously analyzed package, please delete the old      log file first.
 
 ### Step 7: Test More Apps
 - If you want to capture traffic for another app, install the new APK and repeat from **Step 4**.
