@@ -42,7 +42,17 @@ You should have these tools in your device
 chmod +x <filename>.sh
 ```
 
-### Step 1: Start the Emulator
+### Step 1: Install and check the prequisites:
+- To install all required Python libraries for this project, run:
+```
+pip install -r requirements.txt
+```
+- To verify that your system has all the necessary Python packages and command-line tools installed, run:
+```
+python check_requirement.py
+```
+
+### Step 2: Start the Emulator
 - Run:
 ```
 ./run_emulator.sh
@@ -50,7 +60,7 @@ chmod +x <filename>.sh
 - This script will keep running and display the emulator status.
 - As soon as you see the emulator homescreen, you can move to the next step without waiting for this script.
 
-### Step 2: Set Up the Environment
+### Step 3: Set Up the Environment
 - Run:
 ```
 ./setup.sh
@@ -59,21 +69,21 @@ chmod +x <filename>.sh
 
 >**Important:** If you use the "Google Play" or other system images that did not rooted by default, you have to do this step manually by following the tutorial at https://docs.mitmproxy.org/stable/howto-install-system-trusted-ca-android/#3-insert-certificate-into-system-certificate-store and skip running this script.
 
-### Step 3: Install the APK
+### Step 4: Install the APK
 - Install the APK via a browser inside the emulator (like Chrome) or drag-and-drop your .apk file directly into the emulator window.
 
-### Step 4: Start Capturing Traffic
+### Step 5: Start Capturing Traffic
 - Run
 ```
 ./execution <PACKAGE_NAME>
 ```
 Replace <PACKAGE_NAME> with the actual app's package name (example: vn.frt.longchau.app).
 
-### Step 5: Interact with the app
+### Step 6: Interact with the app
 - When you see: `"The capturing is ready for capture network traffic"`, you can now manually use the app.
 - All network traffic will be automatically recorded.
 
-### Step 6: Finish and Save Results
+### Step 7: Finish and Save Results
 - When you are done:
 
     1. Close the app inside the emulator (swipe up the emulator to kill the app process).
@@ -83,10 +93,10 @@ Replace <PACKAGE_NAME> with the actual app's package name (example: vn.frt.longc
     > **Note:**
     New traffic for a package will be appended to its existing log file, if one already exists. To start a fresh capture for a previously analyzed package, please delete the old      log file first.
 
-### Step 7: Test More Apps
+### Step 8: Test More Apps
 - If you want to capture traffic for another app, install the new APK and repeat from **Step 4**.
 
-### Step 8: Stop the Emulator
+### Step 9: Stop the Emulator
 - After you are finished with all testing, stop the emulator and clean up by running:
 ```
 ./stop_emulator.sh
