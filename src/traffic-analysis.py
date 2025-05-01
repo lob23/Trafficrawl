@@ -244,7 +244,7 @@ def get_request_options(req):
 
 
 # Analyze each HTTP request and log whether it is blocked or allowed
-LOG_FILE = "results/request_log"
+LOG_FILE = "results/request_logs"
 
 @concurrent
 def request(flow: http.HTTPFlow):
@@ -290,6 +290,6 @@ def request(flow: http.HTTPFlow):
         "action": "BLOCKED" if blocked else "ALLOWED"
     }
 
-    with open(f'{LOG_FILE}_{APP_PACKAGE}.jsonl', "a", encoding="utf-8") as f:
+    with open(f'{LOG_FILE}/{APP_PACKAGE}.jsonl', "a", encoding="utf-8") as f:
         json.dump(log_entry, f, ensure_ascii=False)
         f.write("\n")

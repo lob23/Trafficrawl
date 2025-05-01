@@ -34,7 +34,9 @@ def process_files(folder_path):
 
     return results
 
-def plot_results(results, output_path = "/Users/hovietbaolong/Documents/HCMUS-SchoolYears/4thyear/Thesis/Document/NetworkTraffic/Adverts_Trackers/BlockedRequestPercentage.png"):
+def plot_results(results, output_path = "results/blocked_requests.png"):
+    if not os.path.exists("results"):
+        os.makedirs("results")
 
     sorted_results = sorted(results.items(), key=lambda x: x[1], reverse=True)
     x_labels = [item[0] for item in sorted_results]
@@ -61,7 +63,7 @@ def plot_results(results, output_path = "/Users/hovietbaolong/Documents/HCMUS-Sc
     plt.show()
 
 if __name__ == '__main__':
-    folder_path = 'results2'  
+    folder_path = 'results/request_logs'  
     results = process_files(folder_path)
     i=0
     
@@ -70,5 +72,5 @@ if __name__ == '__main__':
         if percentage>3:
             i+=1
             print(f"{name}: {percentage:.2f}%")
-    print(f'Total >=5: {i}')
+    print(f'Total >= 5%: {i}')
     plot_results(results)
