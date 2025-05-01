@@ -34,15 +34,13 @@ def main():
     print("Checking system requirements...")
     
     for cmd in REQUIRE_COMMANDS:
-        print(f"{cmd} if {"OK" if check_command(cmd) else "missing"}")
-    print("-----All required commands are checked. Please install missing commands (if any)-----")
+        print(f"{cmd} if {"OK" if check_command(cmd) else "MISSING"}")
     
     print(f"Python version >= {MIN_PYTHON_VERSION[0]}.{MIN_PYTHON_VERSION[1]}: {'OK' if check_python_version() else 'Too old'}")
     print(f"Android emulator available: {'OK' if check_emulator_installed() else 'Missing or error'}")
     
     for package in REQUIRE_PACKAGES:
-        print(f"{package} is {"OK" if check_packages(package) else "missing"}")
-    print("-----All required packages are checked. Please install missing packages (if any)-----")
+        print(f"{package} is {"OK" if check_packages(package) else "MISSING"}")
     
 if __name__ == "__main__":
     main()

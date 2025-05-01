@@ -1,6 +1,6 @@
-pyre2>=0.3.0
-iso3166>=1.0.1
-publicsuffix2>=2.20190812
-tldextract>=3.1.0
-mitmproxy==5.1.1
-adblockparser==0.7
+pyre2
+iso3166
+publicsuffix2
+tldextract
+mitmproxy
+adblockparser
