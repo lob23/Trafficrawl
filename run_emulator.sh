@@ -7,7 +7,7 @@ if [ -z "$AVD_LIST" ]; then
     echo "No emulator found"
     echo "Please create one manually using Android Studio or avdmanager."
     exit 1
-fi  # <<< You forgot this 'fi'
+fi 
 
 echo "Available emulators:"
 echo "$AVD_LIST"
