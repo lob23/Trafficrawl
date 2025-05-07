@@ -73,9 +73,13 @@ python check_requirement.py
 - Install the APK via a browser inside the emulator (like Chrome) or drag-and-drop your .apk file directly into the emulator window.
 
 ### Step 5: Start Capturing Traffic
-- Run
+- Run the application without Frida
 ```
-./execution <PACKAGE_NAME>
+./execution <PACKAGE_NAME> --no-frida
+```
+- Run the application with Frida (in case of app is under certificate pinning):
+```
+./execution <PACKAGE_NAME> --with-frida
 ```
 Replace <PACKAGE_NAME> with the actual app's package name (example: vn.frt.longchau.app).
 
