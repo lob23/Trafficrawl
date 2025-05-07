@@ -245,6 +245,7 @@ def get_request_options(req):
 
 # Analyze each HTTP request and log whether it is blocked or allowed
 LOG_FILE = "results/request_logs"
+os.makedirs(LOG_FILE, exist_ok=True)
 
 @concurrent
 def request(flow: http.HTTPFlow):

@@ -54,6 +54,27 @@ MITM_PID=$!
 
 echo "mitmproxy is running with PID: ${MITM_PID}"
 
+wait_for_port() {
+  local port=$1
+  local retries=100
+  local delay=1
+
+  echo "Waiting for mitmproxy to be ready on port $port..."
+
+  for ((i=0; i<retries; i++)); do
+    if nc -z localhost "$port"; then
+      echo "mitmproxy is ready."
+      return 0
+    fi
+    sleep $delay
+  done
+
+  echo "mitmproxy did not start within expected time."
+  exit 1
+}
+
+wait_for_port ${PORT}
+
 frida -U -f ${PACKAGE} -l src/utils/multiple-script.js
 
 echo "Resetting proxy settings..."
