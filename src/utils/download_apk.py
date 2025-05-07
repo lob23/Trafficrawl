@@ -10,3 +10,8 @@ def get_emulator_abi():
     except Exception as e:
         print("Error detecting emulator ABI:", e)
         return "arm64-v8a" 
+    
+def download_apk(package_name, abi, output_file='downloaded.apk'):
+    dpi = 'nodpi'
+    lang = 'en'
+    url = f"https://apkcombo.com/downloader-api/?device=&arch={abi}&dpi={dpi}&package={package_name}&lang={lang}"

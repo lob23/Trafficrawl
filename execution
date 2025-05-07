@@ -1,12 +1,26 @@
 #!/bin/bash
 
 PACKAGE=$1
+USE_FRIDA=true
 
 if [ -z "${PACKAGE}" ]; then
     echo "Error: No package name."
     echo "Usage: ./execution <PACKAGE_NAME>"
     exit 1
 fi
+
+shift
+
+for arg in "$@"; do
+  case $arg in
+    --no-frida)
+      USE_FRIDA=false
+      ;;
+    --with-frida)
+      USE_FRIDA=true
+      ;;
+  esac
+done
 
 IP_ADDRESS=$(ifconfig en0 | grep "inet " | awk '{print $2}')
 PORT=8080
@@ -75,7 +89,13 @@ wait_for_port() {
 
 wait_for_port ${PORT}
 
-frida -U -f ${PACKAGE} -l src/utils/multiple-script.js
+if [ "$USE_FRIDA" = true ]; then
+  echo "Launching Frida on ${PACKAGE}..."
+  frida -U -f ${PACKAGE} -l src/utils/multiple-script.js
+else
+  echo "Running the app ${PACKAGE} WITHOUT Frida..."
+  adb shell monkey -p ${PACKAGE} -c android.intent.category.LAUNCHER 1
+fi
 
 echo "Resetting proxy settings..."
 
