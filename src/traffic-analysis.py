@@ -1,20 +1,23 @@
 import json
 from datetime import datetime
 import os
+import sys
+
 import re2
 
 from adblockparser import AdblockRules
 from glob import glob
 from urllib.parse import urlparse
+import tldextract
 import base64
 import gzip
-from iso3166 import countries      
+from iso3166 import countries    
 ISO_CC = {c.alpha2.lower() for c in countries}
 
 from urllib.parse import urlparse
-from publicsuffix2 import PublicSuffixList          
+from publicsuffix2 import PublicSuffixList        
 import ipaddress
-import tldextract
+
 from mitmproxy import http,ctx
 from mitmproxy.script import concurrent
 
@@ -25,12 +28,12 @@ STYLESHEET_MATCHER = re2.compile(r"\.(css|scss|less|sass|styl)$", re2.IGNORECASE
 OBJECT_MATCHER = re2.compile(r"\.(swf|flv|jar|exe|apk|dmg|deb|ipa|aab)$", re2.IGNORECASE)
 XHR_MATCHER = re2.compile(r"\.(json|xml|php|aspx|jsp|cgi|yaml|yml|graphql|proto)$", re2.IGNORECASE)
 WEBSOCKET_MATCHER = re2.compile(r"^wss?:\/\/", re2.IGNORECASE)
-
 # Stems from both :
-# [1] "A Comprehensive Study on Third-Party User Tracking in Mobile Applications" by Federica Paci et al.
-# [2] “Mobile health and privacy: cross sectional study,” by G. Tangari et al.
-# [3] "A fait accompli? an empirical study into the absence of consent to {Third-Party} tracking in android apps" by Kollnig et al.
-# and [4] "A Study of Third-Party Tracking by Mobile Apps in the Wild" by Seungyeop Han et al.
+# [1] Exodus tracker list
+# [2] "A Comprehensive Study on Third-Party User Tracking in Mobile Applications" by Federica Paci et al.
+# [3] “Mobile health and privacy: cross sectional study,” by G. Tangari et al.
+# [4] "A fait accompli? an empirical study into the absence of consent to {Third-Party} tracking in android apps" by Kollnig et al.
+# [5] "A Study of Third-Party Tracking by Mobile Apps in the Wild" by Seungyeop Han et al.
 THIRD_PARTY_DOMAINS = [
     "googletagmanager.com",
     "mixpanel.com",
@@ -83,15 +86,31 @@ THIRD_PARTY_DOMAINS = [
     "applovin.com",
     "airpush.com"
 ]
-
 BORING_PKG_TOKENS = {
     "com", "org", "net", "io", "gov", "edu", "mil", "info", "biz",
     "free", "paid", "beta", "lite", "demo", "trial",
-    "test", "alpha", "rc", "debug", "android", "lib", "libs", "core", "util", "utils",
+    "test", "alpha", "rc", "debug",
+    "android", "lib", "libs", "core", "util", "utils",
     "common", "internal", "impl", "framework", "component",
     "tools", "base", "prefs", "settings",
 }
 _psl = PublicSuffixList()
+
+def load_tracker_domains(filepath):
+    domains = set()
+    with open(filepath, "r") as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            line = line.replace(".*.", "")  
+            line = line.lstrip(".")      
+            if "." in line:
+                domains.add(line)
+    return list(domains)
+
+exodus_domains = load_tracker_domains("exodus_tracker_patterns_processed.txt")
+THIRD_PARTY_DOMAINS.extend(exodus_domains)
 
 def load(loader):
     loader.add_option(
@@ -116,8 +135,7 @@ if not blocklist_files:
 rules = AdblockRules((line for file in blocklist_files for line in open(file, "r", encoding="utf-8")),
                      supported_options=["third-party", "script", "image", "stylesheet", "object", "xmlhttprequest", "subdocument", "document", "ping", "media", "font", "other"])
 
-def normalise_domain(host):
-
+def normalise_domain(host: str | bytes | None) -> str:
     if not host:
         return ""
 
@@ -134,11 +152,22 @@ def normalise_domain(host):
     suffix = _psl.get_public_suffix(host)
     if not suffix:
         print(f"NO SUFFIX FOR {suffix}")
-        return host  
+        return host 
 
     lbl = host.rsplit("." + suffix, 1)[0].split(".")[-1]
     return f"{lbl}.{suffix}" if lbl else host
 
+
+def _header(req, key: str) -> str:
+    return (req.headers.get(key, "") or "").strip()
+
+def _same_site(a: str, b: str) -> bool:
+    if not a or not b:
+        return False                   
+    if a == b:
+        return True
+    return a.endswith("." + b) or b.endswith("." + a)
+            
 def normalize_domain(host):
     if not host:
         return ""
@@ -146,6 +175,10 @@ def normalize_domain(host):
     if extracted.suffix:
         return f"{extracted.domain}.{extracted.suffix}"
     return host.lower()
+
+
+
+#-----
 
 def _extract_pkg_tokens(pkg: str) -> set[str]:
     toks = pkg.lower().split(".")
