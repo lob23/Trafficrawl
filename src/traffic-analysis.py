@@ -176,10 +176,6 @@ def normalize_domain(host):
         return f"{extracted.domain}.{extracted.suffix}"
     return host.lower()
 
-
-
-#-----
-
 def _extract_pkg_tokens(pkg: str) -> set[str]:
     toks = pkg.lower().split(".")
     while toks and toks[0] in ISO_CC:
