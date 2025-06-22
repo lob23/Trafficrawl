@@ -23,9 +23,8 @@ from mitmproxy.script import concurrent
 
 IMAGE_MATCHER = re2.compile(r"\.(png|jpe?g|gif|webp|svg|ico|tiff?|avif|bmp|heic)$", re2.IGNORECASE)
 SCRIPT_MATCHER = re2.compile(r"\.(js|mjs|jsx|ts|tsx|vue|coffee|dart|svelte|wasm)$", re2.IGNORECASE)
-MEDIA_MATCHER = re2.compile(r"\.(mp4|mp3|webm|ogg|avi|mov|flac|mkv|m3u8|wav|aac|m4a|opus|3gp|flv|rmvb|mpg|hls)$", re2.IGNORECASE)
-STYLESHEET_MATCHER = re2.compile(r"\.(css|scss|less|sass|styl)$", re2.IGNORECASE)
-OBJECT_MATCHER = re2.compile(r"\.(swf|flv|jar|exe|apk|dmg|deb|ipa|aab)$", re2.IGNORECASE)
+MEDIA_MATCHER = re2.compile(r"\.(mp4|mp3|webm|ogg|avi|mov|flac|mkv|m3u8|mpd|wav|aac|m4a|opus|3gp|flv|rmvb|mpg)$", re2.IGNORECASE)
+STYLESHEET_MATCHER = re2.compile(r"\.(css)$", re2.IGNORECASE)
 XHR_MATCHER = re2.compile(r"\.(json|xml|php|aspx|jsp|cgi|yaml|yml|graphql|proto)$", re2.IGNORECASE)
 WEBSOCKET_MATCHER = re2.compile(r"^wss?:\/\/", re2.IGNORECASE)
 # Stems from both :
@@ -133,7 +132,7 @@ if not blocklist_files:
     raise SystemExit
 
 rules = AdblockRules((line for file in blocklist_files for line in open(file, "r", encoding="utf-8")),
-                     supported_options=["third-party", "script", "image", "stylesheet", "object", "xmlhttprequest", "subdocument", "document", "ping", "media", "font", "other"])
+                     supported_options=["third-party", "script", "image", "stylesheet", "xmlhttprequest", "subdocument", "document", "ping", "media", "font", "other"])
 
 def normalise_domain(host: str | bytes | None) -> str:
     if not host:
@@ -187,21 +186,11 @@ def _extract_pkg_tokens(pkg: str) -> set[str]:
         if t not in BORING_PKG_TOKENS and len(t) > 2 and t.isalpha()
     }
 
-def _header(req, key: str) -> str:
-    return (req.headers.get(key, "") or "").strip()
-
 
 def _first_party_by_pkg(req_host: str, package_name: str) -> bool:
     tokens  = _extract_pkg_tokens(package_name)
     labels  = normalise_domain(req_host).split(".")       
     return bool(tokens & set(labels))         
-
-def _same_site(a: str, b: str) -> bool:
-    if not a or not b:
-        return False                   
-    if a == b:
-        return True
-    return a.endswith("." + b) or b.endswith("." + a)
 
 def is_third_party(req): 
 
@@ -259,8 +248,7 @@ def get_request_options(req):
         options["script"] = True
     elif STYLESHEET_MATCHER.search(url_path) or content_type.startswith("text/css"):
         options["stylesheet"] = True
-    elif OBJECT_MATCHER.search(url_path) or content_type.startswith(("application/x-shockwave-flash", "application/java-archive", "application/octet-stream")): 
-        options["object"] = True
+
     elif XHR_MATCHER.search(url_path) or req.headers.get("X-Requested-With") == "XMLHttpRequest" or content_type == "application/json" or any(pattern in req.url for pattern in ["/api/", "/graphql", "/rest/"]):
         options["xmlhttprequest"] = True
     elif MEDIA_MATCHER.search(url_path) or content_type.startswith(("audio/", "video/", "application/vnd.apple.mpegurl")): 
