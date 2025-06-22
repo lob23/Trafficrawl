@@ -25,7 +25,6 @@ IMAGE_MATCHER = re2.compile(r"\.(png|jpe?g|gif|webp|svg|ico|tiff?|avif|bmp|heic)
 SCRIPT_MATCHER = re2.compile(r"\.(js|mjs|jsx|ts|tsx|vue|coffee|dart|svelte|wasm)$", re2.IGNORECASE)
 MEDIA_MATCHER = re2.compile(r"\.(mp4|mp3|webm|ogg|avi|mov|flac|mkv|m3u8|mpd|wav|aac|m4a|opus|3gp|flv|rmvb|mpg)$", re2.IGNORECASE)
 STYLESHEET_MATCHER = re2.compile(r"\.(css)$", re2.IGNORECASE)
-XHR_MATCHER = re2.compile(r"\.(json|xml|php|aspx|jsp|cgi|yaml|yml|graphql|proto)$", re2.IGNORECASE)
 WEBSOCKET_MATCHER = re2.compile(r"^wss?:\/\/", re2.IGNORECASE)
 # Stems from both :
 # [1] Exodus tracker list
@@ -244,18 +243,17 @@ def get_request_options(req):
     # Categorize Request Types
     if IMAGE_MATCHER.search(url_path) or content_type.startswith("image/"):
         options["image"] = True
-    elif SCRIPT_MATCHER.search(url_path) or content_type.startswith(("application/javascript", "text/javascript")):
+    if SCRIPT_MATCHER.search(url_path) or content_type.startswith(("application/javascript", "text/javascript")):
         options["script"] = True
-    elif STYLESHEET_MATCHER.search(url_path) or content_type.startswith("text/css"):
+    if STYLESHEET_MATCHER.search(url_path) or content_type.startswith("text/css"):
         options["stylesheet"] = True
-
-    elif XHR_MATCHER.search(url_path) or req.headers.get("X-Requested-With") == "XMLHttpRequest" or content_type == "application/json" or any(pattern in req.url for pattern in ["/api/", "/graphql", "/rest/"]):
+    if req.headers.get("X-Requested-With") == "XMLHttpRequest" or req.headers.get("x-requested-with") == "XMLHttpRequest" or req.headers.get("Sec-Fetch-Dest", "").lower() == "empty":
         options["xmlhttprequest"] = True
-    elif MEDIA_MATCHER.search(url_path) or content_type.startswith(("audio/", "video/", "application/vnd.apple.mpegurl")): 
+    if MEDIA_MATCHER.search(url_path) or content_type.startswith(("audio/", "video/")): 
         options["media"] = True
-    elif content_type.startswith(("text/html", "application/xhtml+xml", "application/vnd.wap.xhtml+xml")): 
+    if content_type.startswith(("text/html", "application/xhtml+xml", "application/vnd.wap.xhtml+xml")): 
         options["document"] = True
-    elif (upgrade_header == "websocket" and connection_header == "upgrade") or (upgrade_header == "websocket" and WEBSOCKET_MATCHER.search(req.url)):
+    if (upgrade_header == "websocket" and connection_header == "upgrade") or (upgrade_header == "websocket" and WEBSOCKET_MATCHER.search(req.url)):
         options["websocket"] = True
     return options
 
