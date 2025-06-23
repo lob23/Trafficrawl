@@ -251,7 +251,7 @@ def get_request_options(req):
         options["xmlhttprequest"] = True
     if MEDIA_MATCHER.search(url_path) or content_type.startswith(("audio/", "video/")): 
         options["media"] = True
-    if content_type.startswith(("text/html", "application/xhtml+xml", "application/vnd.wap.xhtml+xml")): 
+    if (req.headers.get("sec-fetch-dest", "") == "document" or req.headers.get("sec-fetch-mode", "") == "navigate" or (content_type.startswith("text/html") and ("x-requested-with" in req.headers or "wv" in req.headers.get("user-agent", "").lower()) and req.headers.get("sec-fetch-dest", "") not in ("iframe", "object", "script"))):
         options["document"] = True
     if (upgrade_header == "websocket" and connection_header == "upgrade") or (upgrade_header == "websocket" and WEBSOCKET_MATCHER.search(req.url)):
         options["websocket"] = True
