@@ -235,7 +235,7 @@ def get_request_options(req):
 
     # Removing Query Parameters.
     url_path = req.url.split("?", 1)[0]
-    content_type = req.headers.get("Content-Type", "")
+    content_type = req.headers.get("Content-Type", "") or req.headers.get("content-type", "")
     
     upgrade_header = req.headers.get("Upgrade", "").lower()
     connection_header = req.headers.get("Connection", "").lower()
