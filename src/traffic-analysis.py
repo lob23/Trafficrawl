@@ -241,17 +241,17 @@ def get_request_options(req):
     connection_header = req.headers.get("Connection", "").lower()
 
     # Categorize Request Types
-    if IMAGE_MATCHER.search(url_path) or content_type.startswith("image/"):
+    if (IMAGE_MATCHER.search(url_path) or content_type.startswith("image/")):
         options["image"] = True
-    if SCRIPT_MATCHER.search(url_path) or content_type.startswith(("application/javascript", "text/javascript")):
+    if (SCRIPT_MATCHER.search(url_path) or content_type.startswith(("application/javascript", "text/javascript"))):
         options["script"] = True
-    if STYLESHEET_MATCHER.search(url_path) or content_type.startswith("text/css"):
+    if (STYLESHEET_MATCHER.search(url_path) or content_type.startswith("text/css")):
         options["stylesheet"] = True
-    if req.headers.get("X-Requested-With") == "XMLHttpRequest" or req.headers.get("x-requested-with") == "XMLHttpRequest" or req.headers.get("Sec-Fetch-Dest", "").lower() == "empty":
+    if (req.headers.get("X-Requested-With") == "XMLHttpRequest" or req.headers.get("x-requested-with") == "XMLHttpRequest") or ( (req.headers.get("Sec-Fetch-Dest", "").lower() == "empty" or req.headers.get("sec-fetch-dest", "").lower() == "empty") and req.method.upper() != "OPTIONS"):
         options["xmlhttprequest"] = True
-    if MEDIA_MATCHER.search(url_path) or content_type.startswith(("audio/", "video/")): 
+    if (MEDIA_MATCHER.search(url_path) or content_type.startswith(("audio/", "video/"))): 
         options["media"] = True
-    if (req.headers.get("sec-fetch-dest", "") == "document" or req.headers.get("sec-fetch-mode", "") == "navigate" or (content_type.startswith("text/html") and ("x-requested-with" in req.headers or "wv" in req.headers.get("user-agent", "").lower()) and req.headers.get("sec-fetch-dest", "") not in ("iframe", "object", "script"))):
+    if ((req.headers.get("sec-fetch-dest", "") == "document" or req.headers.get("Sec-Fetch-Dest", "") == "document") or ((req.headers.get("sec-fetch-mode", "") == "navigate" or req.headers.get("Sec-Fetch-Mode", "") == "navigate") and req.headers.get("Sec-Fetch-Dest", "") not in ("iframe", "object", "script") and ("wv" in req.headers.get("user-agent", "").lower() or "wv" in req.headers.get("User-Agent", "").lower()))):
         options["document"] = True
     if (upgrade_header == "websocket" and connection_header == "upgrade") or (upgrade_header == "websocket" and WEBSOCKET_MATCHER.search(req.url)):
         options["websocket"] = True
