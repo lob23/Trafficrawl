@@ -107,7 +107,7 @@ def load_tracker_domains(filepath):
                 domains.add(line)
     return list(domains)
 
-exodus_domains = load_tracker_domains("exodus_tracker_patterns_processed.txt")
+exodus_domains = load_tracker_domains("src/exodus_tracker_patterns_processed.txt")
 THIRD_PARTY_DOMAINS.extend(exodus_domains)
 
 def load(loader):
